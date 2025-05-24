@@ -27,7 +27,7 @@ Verdict:
       },
       body: JSON.stringify({
         model: "text-davinci-003",
-        prompt: prompt,
+        prompt,
         max_tokens: 80,
         temperature: 0.7,
       }),
@@ -35,10 +35,12 @@ Verdict:
 
     const data = await response.json();
 
+    // 👇 Add this line to log the entire OpenAI response
+    console.log("OpenAI FULL RESPONSE:", JSON.stringify(data, null, 2));
+
     const text = data?.choices?.[0]?.text?.trim();
 
     if (!text || text === "") {
-      console.log("OpenAI returned:", JSON.stringify(data, null, 2));
       return res
         .status(500)
         .json({ verdict: "OpenAI responded, but gave no clear verdict." });
