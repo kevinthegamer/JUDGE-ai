@@ -35,8 +35,8 @@ Verdict:
 
     const data = await response.json();
 
-    // 👇 Add this line to log the entire OpenAI response
-    console.log("OpenAI FULL RESPONSE:", JSON.stringify(data, null, 2));
+    // 👇 Log the full response so we can debug it
+    console.log("OPENAI FULL RESPONSE:", JSON.stringify(data, null, 2));
 
     const text = data?.choices?.[0]?.text?.trim();
 
