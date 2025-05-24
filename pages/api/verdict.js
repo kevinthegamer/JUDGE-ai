@@ -1,11 +1,15 @@
 export default async function handler(req, res) {
-  const { story } = req.body;
-
-  if (!story) {
-    return res.status(400).json({ verdict: "No story provided." });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: "Only POST requests allowed" });
   }
 
-  const prompt = `You are a wise and impartial internet judge. Here's a story:\n\n${story}\n\nWho was in the wrong? Give a short, clear verdict.`;
+  const { story } = req.body;
+
+  if (!story || story.length < 10) {
+    return res.status(400).json({ verdict: "Please provide a longer story." });
+  }
+
+  const prompt = `You are an honest internet judge known for short, clear opinions.\n\nStory: ${story}\n\nVerdict:`;
 
   try {
     const response = await fetch("https://api.openai.com/v1/completions", {
@@ -17,17 +21,24 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "text-davinci-003",
         prompt,
-        max_tokens: 100,
-        temperature: 0.7
+        max_tokens: 60,
+        temperature: 0.7,
+        n: 1,
+        stop: ["\\n"]
       })
     });
 
     const data = await response.json();
-    const verdict = data.choices?.[0]?.text?.trim() || "Unable to determine verdict.";
+
+    const verdict = data?.choices?.[0]?.text?.trim();
+
+    if (!verdict) {
+      return res.status(500).json({ verdict: "AI did not return a clear verdict." });
+    }
 
     res.status(200).json({ verdict });
   } catch (error) {
-    console.error("OpenAI API error:", error);
-    res.status(500).json({ verdict: "Error generating verdict. Please try again later." });
+    console.error("OpenAI error:", error);
+    res.status(500).json({ verdict: "Error getting verdict. Please try again later." });
   }
 }
